@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="srv.btp.wml.Form_Main" >
+
+    <item
+        android:id="@+id/action_logout"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Deauthorize"/>
+	<item
+        android:id="@+id/action_signout"
+        android:orderInCategory="101"
+        android:showAsAction="never"
+        android:title="Logout"/>
+</menu>

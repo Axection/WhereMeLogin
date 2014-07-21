@@ -1,0 +1,74 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="srv.btp.wml.view.Form_Main"
+     tools:ignore="MergeRootFrame"  >
+
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/top_layout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="#e56350"
+        android:minHeight="464dp" >
+
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:background="#87342b" >
+
+        <ImageView
+            android:id="@+id/indicator_gps"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="12px"
+            android:src="@drawable/indicator_gps_off" />
+
+        <TextView
+            android:id="@+id/txt_gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="18px"
+            android:layout_toRightOf="@+id/indicator_gps"
+            android:text="GPS Status : OFF"
+            android:textColor="#e5e5e5"
+            android:textSize="@dimen/font_indicator_status" />
+
+        <ImageView
+            android:id="@+id/indicator_network"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="12px"
+            android:src="@drawable/indicator_gps_off" />
+
+        <TextView
+            android:id="@+id/txtNetwork"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/txt_gps"
+            android:layout_alignBottom="@+id/txt_gps"
+            android:layout_marginRight="18px"
+            android:layout_toLeftOf="@+id/indicator_network"
+            android:text="Network Status : OK"
+            android:textColor="#e5e5e5"
+            android:textSize="@dimen/font_indicator_status" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

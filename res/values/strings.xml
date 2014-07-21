@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Where Me Login</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="default_service">http://mobilepresence.comodostudio.com/</string>
+    <string name="extension_string">RESTNew/</string>
+    <string name="absenNotifier">Tekan tombol ABSEN di bawah ini untuk melakukan absen.</string>
+    <string name="notifier2">Tombol akan siap ditekan setelah GPS dan sambungan internet memadai.</string>
+    <string-array name="stringTestArray">
+        <item >Array</item>
+        <item >NotArray</item>
+        <item >MaybeArray</item>
+    </string-array>
+
+</resources>
