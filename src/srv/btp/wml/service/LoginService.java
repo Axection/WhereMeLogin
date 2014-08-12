@@ -40,7 +40,7 @@ public class LoginService extends AsyncTask<String, Integer, Boolean> {
 	//Gabungan SubmitData dan Retrieve Data
 
 	public static final String FIELD_TABLE_NAME = "user"; // Nama tabel login
-	public static final int MAXIMUM_WAITING_TIME = 60000;
+	public static final int MAXIMUM_WAITING_TIME = 30000;
 	public static final String TABLE_ID = "id";
 	public static final String TABLE_USERNAME = "username";
 	// General
@@ -91,6 +91,7 @@ public class LoginService extends AsyncTask<String, Integer, Boolean> {
 		progressDialog.setMessage(message);
 		progressDialog.setCanceledOnTouchOutside(false);
 		progressDialog.setCancelable(true);
+		progressDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
 		progressDialog.show();
 		ctd.start();
 

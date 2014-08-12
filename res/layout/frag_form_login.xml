@@ -1,87 +1,84 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#e56350"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    
     tools:context="srv.btp.wml.view.Form_Main$PlaceholderFragment" >
 
-    <EditText
-        android:id="@+id/txtPassword"
-        android:layout_width="238dp"
-        android:layout_height="42dp"
-        android:layout_alignLeft="@+id/txtUsername"
-        android:layout_below="@+id/txtUsername"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/filltext"
-        android:ems="10"
-        android:hint="Password..."
-        android:inputType="textPassword"
-        android:paddingLeft="12dp" >
-    </EditText>
-
     <RelativeLayout
-        android:id="@+id/rel_title"
         android:layout_width="match_parent"
-        android:layout_height="96dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="62dp"
-        android:background="#ebc8c8" >
+        android:layout_height="wrap_content"
+        android:background="#fff"
+        android:paddingBottom="12dp" >
 
-        <TextView
-            android:id="@+id/labelWML"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <RelativeLayout
+            android:id="@+id/rel_title"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="62dp"
+            android:background="#e02800" >
+
+            <TextView
+                android:id="@+id/labelWML"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="MOBILE WORKFORCE"
+                android:textColor="#fff"
+                android:textSize="36sp" />
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/txtUsername"
+            android:layout_width="238dp"
+            android:layout_height="42dp"
+            android:layout_below="@+id/rel_title"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:text="WHERE ME LOGIN"
-            android:textColor="#4f4f4f"
-            android:textSize="36sp" />
+            android:layout_marginTop="75dp"
+            android:background="@drawable/filltext"
+            android:ems="10"
+            android:hint="Username"
+            android:inputType="text"
+            android:paddingLeft="12dp" />
+
+        <EditText
+            android:id="@+id/txtPassword"
+            android:layout_width="238dp"
+            android:layout_height="42dp"
+            android:layout_alignLeft="@+id/txtUsername"
+            android:layout_below="@+id/txtUsername"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/filltext"
+            android:ems="10"
+            android:hint="Password..."
+            android:inputType="textPassword"
+            android:paddingLeft="12dp" />
+
+        <CheckBox
+            android:id="@+id/ckRemember"
+            android:layout_width="238dp"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/txtPassword"
+            android:layout_below="@+id/txtPassword"
+            android:layout_marginTop="12dp"
+            android:checked="false"
+            android:text="Remember Me?"
+            android:textColor="#717070" />
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="238dp"
+            android:layout_height="52dp"
+            android:layout_alignLeft="@+id/ckRemember"
+            android:layout_below="@+id/ckRemember"
+            android:layout_marginTop="12dp"
+            android:background="#e02800"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="LOGIN"
+            android:textColor="#FFF" />
 
     </RelativeLayout>
 
-    <CheckBox
-        android:id="@+id/ckRemember"
-        android:layout_width="238dp"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/txtPassword"
-        android:layout_alignRight="@+id/txtPassword"
-        android:layout_below="@+id/txtPassword"
-        android:layout_marginTop="6dp"
-        android:checked="false"
-        android:text="Remember Me?"
-        android:textColor="#fff" />
-
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="238dp"
-        android:layout_height="52dp"
-        android:layout_alignLeft="@+id/ckRemember"
-        android:layout_alignRight="@+id/ckRemember"
-        android:layout_below="@+id/ckRemember"
-        android:layout_marginTop="6dp"
-        android:background="#ac3022"
-        android:gravity="center_vertical|center_horizontal"
-        android:text="LOGIN"
-        android:textColor="#FFF" />
-
-    <EditText
-        android:id="@+id/txtUsername"
-        android:layout_width="238dp"
-        android:layout_height="42dp"
-        android:layout_below="@+id/rel_title"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="67dp"
-        android:background="@drawable/filltext"
-        android:ems="10"
-        android:hint="Username"
-        android:inputType="text"
-        android:paddingLeft="12dp" >
-
-        <requestFocus />
-        
-        </EditText>
-
-</RelativeLayout>
+</ScrollView>

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/scroller"
     android:layout_width="match_parent"
@@ -6,8 +5,9 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#e56350" >
+        android:layout_height="wrap_content"
+        android:background="#fff"
+        android:paddingBottom="12dp" >
 
         <Button
             android:id="@+id/btnReport"
@@ -16,7 +16,7 @@
             android:layout_below="@+id/txtReport"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="16dp"
-            android:background="#ac3022"
+            android:background="#e02800"
             android:gravity="center_vertical|center_horizontal"
             android:text="KIRIM"
             android:textColor="#fff"
@@ -32,16 +32,16 @@
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/filltext"
+            android:background="@drawable/bg_check"
             android:ems="10"
             android:gravity="top|center_vertical"
             android:hint="Tuliskan laporan anda disini..."
             android:inputType="textMultiLine"
             android:minHeight="200dp"
+            android:paddingBottom="8dp"
             android:paddingLeft="12dp"
             android:paddingRight="8dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="8dp"  />
+            android:paddingTop="12dp" />
 
         <RelativeLayout
             android:id="@+id/rel_title"
@@ -50,7 +50,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:layout_marginTop="62dp"
-            android:background="#ebc8c8" >
+            android:background="#e02800" >
 
             <TextView
                 android:id="@+id/labelReport"
@@ -59,7 +59,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
                 android:text="REPORT"
-                android:textColor="#4f4f4f"
+                android:textColor="#fff"
                 android:textSize="36sp" />
         </RelativeLayout>
 
@@ -72,7 +72,7 @@
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/report_nil"
+            android:background="@drawable/report_rec"
             android:entries="@array/stringTestArray"
             android:gravity="left|center_vertical"
             android:paddingLeft="6dp"

@@ -95,6 +95,7 @@ public class AbsenService extends AsyncTask<String, Integer, Boolean> {
 		progressDialog.setMessage(message);
 		progressDialog.setCanceledOnTouchOutside(false);
 		progressDialog.setCancelable(true);
+		progressDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
 		progressDialog.show();
 		ctd.start();
 
@@ -138,11 +139,13 @@ public class AbsenService extends AsyncTask<String, Integer, Boolean> {
 				State.SessionID = SessionID;
 				//Writing to Preferences
 				Log.d("Absen status 200", "writing preferences data : " + SessionID + " " + userNameResult);
-				PreferenceManager.getDefaultSharedPreferences(
+				/*PreferenceManager.getDefaultSharedPreferences(
 						State.main_activity.getApplicationContext())
 						.edit()
 						.putString("sessionID", SessionID)
-						.commit();
+						.commit();*/
+				State.SessionID = SessionID;
+				State.SaveData();
 				
 				return true;
 			}
@@ -183,8 +186,8 @@ public class AbsenService extends AsyncTask<String, Integer, Boolean> {
 			nameValuePairs = new ArrayList<NameValuePair>(2);
 			
 			nameValuePairs.add(new BasicNameValuePair("authID", id_user));
-			nameValuePairs.add(new BasicNameValuePair("location[\"longitude\"]", longitude ));
-			nameValuePairs.add(new BasicNameValuePair("location[\"latitude\"]", latitude));
+			nameValuePairs.add(new BasicNameValuePair("location[longitude]", longitude ));
+			nameValuePairs.add(new BasicNameValuePair("location[latitude]", latitude));
 			httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 			Log.v("Absen : target", target_post);
 			Log.d("Absen : nameValuePairs", nameValuePairs.toString() );

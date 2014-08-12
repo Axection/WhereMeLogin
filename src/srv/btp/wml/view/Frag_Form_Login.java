@@ -13,6 +13,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -74,7 +76,14 @@ public class Frag_Form_Login extends Fragment {
 				
 			}
 		});
-		
+		ckRemember.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				State.isRemembered = isChecked;
+				State.SaveData();
+				
+			}
+		});
 	}
 
     
@@ -87,12 +96,16 @@ public class Frag_Form_Login extends Fragment {
         // onStart is a good place to do this because the layout has already been
         // applied to the fragment at this point so we can safely call the method
         // below that sets the article text.
+        if(State.isRemembered){
+        	txtUsername.setText(State.UserName);
+        	ckRemember.setChecked(State.isRemembered);
+        }
         Bundle args = loaded;
         if (args != null) {
         	txtUsername.setText(args.getString("username"));
         	txtPassword.setText(args.getString("password"));
-
         } 
+        
     }
 
     

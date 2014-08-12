@@ -16,13 +16,13 @@ import android.widget.TextView;
 
 public class Frag_Form_Presence extends Fragment {
 	// Declaring Objects
-	ImageButton btnAbsen;
-	TextView lblNotice1;
-	TextView lblNotice2;
-	TextView lblAbsen;
-	Bundle loaded;
-	int internetStatus;
-	int GPSStatus;
+	private ImageButton btnAbsen;
+	private TextView lblNotice1;
+	private TextView lblNotice2;
+	private TextView lblAbsen;
+	private Bundle loaded;
+	private int internetStatus;
+	private int GPSStatus;
 	public static int GPSCode = 0;
 	private int lastGPSCode = 0;
 
@@ -46,11 +46,11 @@ public class Frag_Form_Presence extends Fragment {
 		if(lastGPSCode == GPSCode)return;
 		Log.e("RunnableThreadUI", "Beginning setState with GPSCode=" + GPSCode);
 		if (GPSCode == 1) {
-			btnAbsen.setImageResource(R.drawable.absen_ok);
+			btnAbsen.setImageResource(R.drawable.absen_ok_rec);
 			btnAbsen.setClickable(true);
 			btnAbsen.setEnabled(true);
 		} else if (GPSCode == 2) {
-			btnAbsen.setImageResource(R.drawable.absen_no_ok);
+			btnAbsen.setImageResource(R.drawable.absen_no_ok_rec);
 			btnAbsen.setClickable(false);
 			btnAbsen.setEnabled(false);
 		}
@@ -76,7 +76,7 @@ public class Frag_Form_Presence extends Fragment {
 		btnAbsen.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO Kirim Laporan, terus reset component
+				
 				presence = new AbsenService();
 				String DATA_PRESS[] = { State.AuthID + "",
 						State.longitude + "", State.latitude + "" };

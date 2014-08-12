@@ -13,7 +13,6 @@
         android:layout_above="@+id/top_layout"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:background="#e56350"
         android:minHeight="464dp" >
 
     </FrameLayout>
@@ -24,17 +23,18 @@
         android:layout_height="36dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:background="#87342b" >
+        android:background="#717070" >
 
         <ImageView
             android:id="@+id/indicator_gps"
+            android:contentDescription="GPS Indicator"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="12px"
+            android:layout_marginLeft="6dp"
             android:src="@drawable/indicator_gps_off" />
 
         <TextView
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="18px"
+            android:layout_marginLeft="9dp"
             android:layout_toRightOf="@+id/indicator_gps"
             android:text="GPS Status : OFF"
             android:textColor="#e5e5e5"
@@ -54,8 +54,10 @@
             android:layout_height="24dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:layout_marginRight="12px"
-            android:src="@drawable/indicator_gps_off" />
+            android:layout_marginRight="6dp"
+            android:contentDescription="Network Indicator"
+            android:src="@drawable/logo_telkom"
+            android:visibility="visible" />
 
         <TextView
             android:id="@+id/txtNetwork"
@@ -63,11 +65,12 @@
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/txt_gps"
             android:layout_alignBottom="@+id/txt_gps"
-            android:layout_marginRight="18px"
+            android:layout_marginRight="9dp"
             android:layout_toLeftOf="@+id/indicator_network"
-            android:text="Network Status : OK"
+            android:text="2014 Telkom Indonesia"
             android:textColor="#e5e5e5"
-            android:textSize="@dimen/font_indicator_status" />
+            android:textSize="@dimen/font_indicator_status"
+            android:visibility="visible" />
 
     </RelativeLayout>
 

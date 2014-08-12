@@ -9,6 +9,8 @@ import srv.btp.wml.data.State;
 import srv.btp.wml.service.AbsenService;
 import srv.btp.wml.service.GPSLocationService;
 import srv.btp.wml.service.LoginService;
+import srv.btp.wml.service.LogoutService;
+import srv.btp.wml.service.ReportService;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -17,6 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,13 +30,14 @@ import android.widget.TextView;
 public class Form_Main extends FragmentActivity {
 
 	// Object List
-	protected Timer Timer_Service_Countdown = new Timer(true);
-	static MenuItem logout;
-	static MenuItem signout;
+	private Timer Timer_Service_Countdown = new Timer(true);
+	private static MenuItem logout;
+	private static MenuItem signout;
 	public static TextView txtGPS;
 	public static TextView txtNetwork;
-	ImageView gps_indicator;
-	GPSLocationService gls;
+	private ImageView gps_indicator;
+	private GPSLocationService gls;
+	protected LogoutService logouts;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -67,11 +71,24 @@ public class Form_Main extends FragmentActivity {
 			Timer_Service_Countdown.schedule(timerService, Calendar.getInstance().getTime(),
 					1000);
 			gls = new GPSLocationService(gps_indicator);
-			gls.ActivateGPS();
+			//gls.ActivateGPS();
 		}
 	}
 	
-	public void CallPassword(int ErrorCode) {
+	public static void MsgBox(CharSequence title, CharSequence text){
+			AlertDialog.Builder builder = new AlertDialog.Builder(State.main_activity);
+			builder.setTitle(title);
+			builder.setMessage(text);
+			builder.setCancelable(false);
+			builder.setPositiveButton("OK", null);
+			AlertDialog alert = builder.create();
+			alert.setCanceledOnTouchOutside(false);
+			alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+			alert.show();
+	}
+	
+	
+	void CallPassword(int ErrorCode) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(State.main_activity);
 		builder.setTitle("Login");
 		switch (ErrorCode){
@@ -101,48 +118,47 @@ public class Form_Main extends FragmentActivity {
 		});
 		AlertDialog alert = builder.create();
 		alert.setCanceledOnTouchOutside(false);
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
 		alert.show();
 	}
 
 	public static void setFragmentView(int status) {
 		FragmentActivity fg = (FragmentActivity) State.main_activity;
+		FragmentTransaction ft = fg.getSupportFragmentManager().beginTransaction();
+		ft.setCustomAnimations(R.anim.flyfadein, R.anim.flyfadeout);
+		
 		if (State.current_fragment != null)
-			fg.getSupportFragmentManager().beginTransaction()
-					.remove(State.current_fragment).commit();
+			ft.remove(State.current_fragment);
 		try {
 			switch (status) {
 			case State.STATUS_IDLE:
 				Frag_Form_Login form_login = new Frag_Form_Login();
 				form_login.setArguments(fg.getIntent().getExtras());
-				fg.getSupportFragmentManager().beginTransaction()
-						.add(R.id.container, form_login).commit();
+				ft.add(R.id.container, form_login);
 				State.current_fragment = form_login;
-
 				State.main_activity.invalidateOptionsMenu();
 				break;
 			case State.STATUS_LOGGED_IN:
 				Frag_Form_Presence form_presence = new Frag_Form_Presence();
 				form_presence.setArguments(fg.getIntent().getExtras());
-				fg.getSupportFragmentManager().beginTransaction()
-						.add(R.id.container, form_presence).commit();
+				ft.add(R.id.container, form_presence);
 				State.current_fragment = form_presence;
-
 				State.main_activity.invalidateOptionsMenu();
 				break;
 			case State.STATUS_PRESENCED:
 				Frag_Form_Report form_report = new Frag_Form_Report();
 				form_report.setArguments(fg.getIntent().getExtras());
-				fg.getSupportFragmentManager().beginTransaction()
-						.add(R.id.container, form_report).commit();
+				ft.add(R.id.container, form_report);
 				State.current_fragment = form_report;
-
 				State.main_activity.invalidateOptionsMenu();
-				
 				break;
 
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
+		} finally {
+			
+			ft.commit();
 		}
 		State.SaveData();
 	}
@@ -173,6 +189,25 @@ public class Form_Main extends FragmentActivity {
 		return true;
 	}
 	
+	private void ForceLogout(){
+		State.status = State.STATUS_LOGGED_IN;
+		Form_Main.setFragmentView(State.status);
+		State.SessionID = "";
+		State.SaveData();
+		String msg = "";
+		AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        msg = "Terdeteksi waktu kerja anda telah berakhir. Silahkan lakukan presensi ulang.";
+        builder.setTitle("Peringatan");
+		builder.setMessage(msg);
+        builder.setCancelable(false);
+        builder.setPositiveButton("OK", null);
+        AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+		alert.setCanceledOnTouchOutside(false);
+        alert.show();
+		
+	}
 	private void CallLogout(){
 		String msg = "";
 		AlertDialog.Builder builder;
@@ -185,7 +220,25 @@ public class Form_Main extends FragmentActivity {
             new DialogInterface.OnClickListener() {
 			// Yes
 			public void onClick(DialogInterface dialog, int id) {
-				//TODO:Sistem logout
+				//Sistem logout
+
+				logouts = new LogoutService();
+				//get the username password data
+				String DATA_LOGIN[] = {
+						State.AuthID + "", //1 - auth
+						State.longitude + "", //2 - longitude
+						State.latitude + "", //3 - latitude
+						State.SessionID + "" //4 - sessionID
+				};
+				Log.d("LogoutService","initializing Logout...");
+
+				try {
+					logouts.execute(DATA_LOGIN);
+				} catch (Exception e) {
+					State.main_activity.CallLogoutError();
+				}
+				
+				
 
 			}
 		});
@@ -197,6 +250,8 @@ public class Form_Main extends FragmentActivity {
                 }
             });
         AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+		alert.setCanceledOnTouchOutside(false);
         alert.show();
 	}
 	
@@ -212,10 +267,10 @@ public class Form_Main extends FragmentActivity {
             new DialogInterface.OnClickListener() {
 			// Yes
 			public void onClick(DialogInterface dialog, int id) {
-				//TODO:Sistem Deauthorize
+				//Sistem Deauthorize
 				State.AuthID = -1;
 				State.SessionID = "";
-				State.UserName = "";
+				//State.UserName = "";
 				State.SaveData();
 				State.status = State.STATUS_IDLE;
 				Form_Main.setFragmentView(State.status);
@@ -231,6 +286,40 @@ public class Form_Main extends FragmentActivity {
                 }
             });
         AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+		alert.setCanceledOnTouchOutside(false);
+        alert.show();
+	}
+	
+	private void CallExit(){
+		String msg = "";
+		AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        msg = "Apakah anda yakin ingin keluar aplikasi?";
+        builder.setTitle("Exit");
+		builder.setMessage(msg);
+        builder.setCancelable(false);
+        builder.setPositiveButton("Ya", 
+            new DialogInterface.OnClickListener() {
+			// Yes
+			public void onClick(DialogInterface dialog, int id) {
+				
+				timerService.cancel();
+				gls.StopGPS();
+				Frag_Form_Presence.GPSCode = -1;
+				finish();
+			}
+		});
+        builder.setNegativeButton("Tidak",
+            new DialogInterface.OnClickListener() {
+              	//No
+                public void onClick(DialogInterface dialog,int id) {
+                    dialog.cancel();
+                }
+            });
+        AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+		alert.setCanceledOnTouchOutside(false);
         alert.show();
 	}
 
@@ -241,7 +330,7 @@ public class Form_Main extends FragmentActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_logout) {
-			//TODO: Deauthorize
+			//Deauthorize
 			CallDeauthorize();
 			return true;
 		}
@@ -250,16 +339,17 @@ public class Form_Main extends FragmentActivity {
 			CallLogout();
 			return true;
 		}
+		if (id == R.id.action_exit) {
+			CallExit();
+			return true;
+		}
 		return super.onOptionsItemSelected(item);
 	}
 	
 	@Override
 	public void onBackPressed(){
-		super.onBackPressed();
-		timerService.cancel();
-		gls.StopGPS();
-		Frag_Form_Presence.GPSCode = -1;
-		finish();
+		//super.onBackPressed();
+		CallExit();
 		//System.exit(0);
 	}
 
@@ -280,13 +370,15 @@ public class Form_Main extends FragmentActivity {
 					.getBaseContext().getSystemService(Context.ALARM_SERVICE);
 			mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 400,
 					mPendingIntent);
-			System.exit(0);
+			onBackPressed();
 
 		}
 	}
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
+		State.isGPSWorking = false;
+		gls.ActivateGPS();
 		Log.d("MainForm","onPostCreate");
 		
 		
@@ -294,7 +386,7 @@ public class Form_Main extends FragmentActivity {
 	}
 
 	// CallPassword Extension
-	protected TimerTask timerService = new TimerTask() {
+	private TimerTask timerService = new TimerTask() {
 		@Override
 		public void run() {
 			//LoginService Division
@@ -321,7 +413,8 @@ public class Form_Main extends FragmentActivity {
 					}
 				});
 			}
-			Log.d("AbsenServiceTimer", AbsenService.isDone + "");
+			//AbsenService
+			//Log.d("AbsenServiceTimer", AbsenService.isDone + "");
 			//AbsenService
 			if (AbsenService.isDone) {
 				AbsenService.isDone = false;
@@ -347,9 +440,64 @@ public class Form_Main extends FragmentActivity {
 				});
 			}
 			
+			//LogoutService
+			if (LogoutService.isDone) {
+				LogoutService.isDone = false;
+				State.main_activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Log.e("LogoutService",
+								"Read status Logout isFail = "
+										+ LogoutService.isFail);
+						if (LogoutService.isFail) {
+							LogoutService.isFail = false;
+							Log.d("LogoutRespond",LogoutService.SessionIDResult + "");
+							if(LogoutService.isNeedLogout){
+								LogoutService.isNeedLogout = false;
+								ForceLogout();
+								
+							}else
+								CallLogoutError();
+						} else {
+							Log.d("LogoutService RESULT","Wah, accessed");
+							// Simpan Auth ID dan lainnya
+							State.status = State.STATUS_LOGGED_IN;
+							Form_Main.setFragmentView(State.status);
+						}
+					}
+				});
+			}
+			
+			//ReportService
+			if (ReportService.isDone) {
+				ReportService.isDone = false;
+				State.main_activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Log.e("ReportService",
+								"Read status Report isFail = "
+										+ ReportService.isFail);
+						if (ReportService.isFail) {
+							ReportService.isFail = false;
+							Log.d("ReportService",ReportService.SessionIDResult + "");
+							if(ReportService.isNeedLogout){
+								ReportService.isNeedLogout = false;
+								ForceLogout();
+							}else
+							MsgBox("Laporan","Laporan gagal dikirim.");
+							
+						} else {
+							Log.d("ReportService RESULT","Wah, accessed");
+							MsgBox("Laporan","Laporan terkirim.");
+							//Terkirim
+							
+						}
+					}
+				});
+			}
+			
 			//GPSLocation Service
 			if(!GPSLocationService.displayGpsStatus() && !GPSLocationService.isMocked){
-
 				State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
 				State.main_activity.runOnUiThread(new Runnable() {
 					@Override
@@ -365,6 +513,7 @@ public class Form_Main extends FragmentActivity {
 					Frag_Form_Presence.GPSCode = 2;
 				}
 				State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
+				
 			}
 			
 			//Rolling~
@@ -373,7 +522,7 @@ public class Form_Main extends FragmentActivity {
 	};
 	// End CallPassword
 
-	public void CallPress() {
+	void CallPress() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(State.main_activity);
 		builder.setTitle("Absen");
 		builder.setMessage("Pengajuan presensi gagal. Mohon periksa kembali apakah internet anda aktif atau sudah pernah melakukan presensi sebelumnya di device lain.");
@@ -388,9 +537,27 @@ public class Form_Main extends FragmentActivity {
 			}
 		});
 		AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
 		alert.setCanceledOnTouchOutside(false);
 		alert.show();
-		
+	}
+	
+	void CallLogoutError() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(State.main_activity);
+		builder.setTitle("Logout");
+		builder.setMessage("Gagal mengakhiri sesi kerja. Pastikan sebelumnya internet anda aktif.");
+		builder.setCancelable(false);
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				return;
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+		alert.setCanceledOnTouchOutside(false);
+		alert.show();
 	}
 
 }

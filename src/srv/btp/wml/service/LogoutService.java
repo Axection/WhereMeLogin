@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,12 +19,14 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import srv.btp.wml.R;
 import srv.btp.wml.data.State;
+import srv.btp.wml.view.Form_Main;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -38,15 +40,20 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 
 	// Ada kabar gembira untuk kita semua :v
 	//Gabungan SubmitData dan Retrieve Data
-	//sengaja error soalnya ini masi belon diganti
-	public static final String FIELD_TABLE_NAME = "user"; // Nama tabel login
-	public static final int MAXIMUM_WAITING_TIME = 60000;
-	public static final String TABLE_ID = "id";
-	public static final String TABLE_USERNAME = "username";
+
+	public static final String FIELD_TABLE_NAME = "absen"; // Nama tabel absen
+	public static final int MAXIMUM_WAITING_TIME = 30000;
+	public static final String TABLE_ID = "authID";
+	public static final String TABLE_LOCATION= "location";
+	public static final String ENTRY_LONGITUDE = "longitude";
+	public static final String ENTRY_LATITUDE = "latitude";
+	public static final String ENTRY_SUCCESS = "success";
+	
 	// General
 	static int respondCode = 0;
-	public static boolean isDone;
+	public static boolean isDone = false;
 	public static boolean isFail = false;
+	public static boolean isNeedLogout = false;
 
 	private boolean isGetDataFailed;
 	String URLService = PreferenceManager.getDefaultSharedPreferences(
@@ -58,12 +65,13 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 	private ProgressDialog progressDialog = new ProgressDialog(
 			(Activity) State.main_activity);
 	
-	public static String message = "Menyambung akun...";
+	public static String message = "Menghubungi server untuk menutup sesi kerja sebagai : ";
+	public static String SessionIDResult;
 	protected CountDownTimer ctd = new CountDownTimer(MAXIMUM_WAITING_TIME, 200) {
 		@Override
 		public void onTick(long arg0) {
-			Log.d("RouteTickingWaiting", arg0 + " JSON waiting time.");
-			progressDialog.setMessage(message
+			Log.d("AbsenTicker", arg0 + " JSON waiting time.");
+			progressDialog.setMessage(message + State.UserName +  " ..."
 					+ "\nTekan tombol 'Back' untuk batal.");
 		}
 		@Override
@@ -74,11 +82,12 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 	};
 
 	// Submission Type
-	String username;
-	String password;
-
+	String id_user;
+	String latitude;
+	String longitude;
+	String SessionID;
 	// Retrieving Type
-	int userID = -1;
+	
 	String userNameResult = "";
 	InputStream inputStream = null;
 	String result;
@@ -86,11 +95,11 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 	@Override
 	protected void onPreExecute() {
 		isDone = false;
-
 		// Membersihkan State
 		progressDialog.setMessage(message);
 		progressDialog.setCanceledOnTouchOutside(false);
 		progressDialog.setCancelable(true);
+		progressDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
 		progressDialog.show();
 		ctd.start();
 
@@ -111,37 +120,37 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 	
 	@Override
 	protected Boolean doInBackground(String... values) {
-		if (values.length == 2){
-			Log.v("LoginService : status", "Valid data! Working...");
+		if (values.length == 4){
+			Log.v("Logout : status", "Valid data! Working...");
 			// 0 : username
-			if (values[0] != null) {
-				username = values[0];
+			if (values[0] != null) { //AuthID
+				id_user = values[0];
 			}
 			// 1 : passowrd
-			if (values[1] != null) {
-				password = values[1];
+			if (values[1] != null) { //Longitude
+				longitude = values[1];
+			}
+			
+			if (values[2] != null) { //Latitude
+				latitude = values[2];
+			}
+			if (values[3] != null) { //SessionID
+				SessionID = values[3];
 			}
 
-			int status = postData(username, password);
+			int status = postData(id_user,longitude,latitude,SessionID);
 			
-			Log.v("LoginService : status", status + "");
-			LogoutService.respondCode = userID;
-			if (status == 200){
-				State.AuthID = userID;
-				State.UserName = userNameResult;
+			Log.v("AbsenService : status", status + "");
+			if (!isFail){
+				State.SessionID = "";
 				//Writing to Preferences
-				Log.d("LoginService status 200", "writing preferences data : " + userID + " " + userNameResult);
+				Log.d("Absen status 200", "writing preferences data : " + SessionIDResult );
 				PreferenceManager.getDefaultSharedPreferences(
 						State.main_activity.getApplicationContext())
 						.edit()
-						.putInt("user_id", userID)
+						.putString("sessionID", "")
 						.commit();
 				
-				PreferenceManager.getDefaultSharedPreferences(
-						State.main_activity.getApplicationContext())
-						.edit()
-						.putString("username", userNameResult)
-						.commit();
 				return true;
 			}
 			else
@@ -168,7 +177,7 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 			isFail = false;
 	};
 
-	private int postData(String username, String password) {
+	private int postData(String id_user, String longitude, String latitude, String sessID) {
 		String target_post = URLService 
 				+ State.main_activity.getResources().getString(R.string.extension_string)
 				+ FIELD_TABLE_NAME;
@@ -180,12 +189,14 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 		try {
 			nameValuePairs = new ArrayList<NameValuePair>(2);
 			
-			nameValuePairs.add(new BasicNameValuePair("username", username));
-			nameValuePairs.add(new BasicNameValuePair("password", password));
+			nameValuePairs.add(new BasicNameValuePair("authID", id_user));
+			nameValuePairs.add(new BasicNameValuePair("location[longitude]", longitude ));
+			nameValuePairs.add(new BasicNameValuePair("location[latitude]", latitude));
+			nameValuePairs.add(new BasicNameValuePair("sessionID", sessID));
 			httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-			Log.v("LoginService : target", target_post);
-			Log.d("LoginService : nameValuePairs", Arrays.toString(nameValuePairs.toArray()) );
-
+			Log.v("Logout : target", target_post);
+			
+			Log.d("Logout : nameValuePairs", nameValuePairs.toString() );
 			// Execute HTTP Post Request
 			HttpResponse response = httpclient.execute(httppost);
 			//waiting for da respond
@@ -223,8 +234,8 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 			return -1024;
 		}
 		catch (IOException e) {
-			Log.d("error LoginService query io exception", e.getMessage());
-			Log.d("error LoginService server URL", target_post);
+			Log.d("error Logout query io exception", e.getMessage());
+			Log.d("error Logout server URL", target_post);
 			Log.e("IOException", e.toString());
 			e.printStackTrace();
 			isFail = true;
@@ -275,13 +286,7 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 				//ini ada perubahan jadi inget returnnya diolah disini
 				JSONObject jObject = (JSONObject) new JSONTokener(result).nextValue();//jArray.getJSONObject(0);
 				Log.d("parse",jObject.toString());
-				userID = jObject.getInt(TABLE_ID);
-				userNameResult = jObject.getString(TABLE_USERNAME);
-				//Urgency alert
-				if(userID < 0){
-					isFail = true;
-					isGetDataFailed = true;
-				}
+				jObject.getString(ENTRY_SUCCESS);
 			} 
 			catch (JSONException e) {
 				isFail = true;
@@ -293,9 +298,17 @@ public class LogoutService extends AsyncTask<String, Integer, Boolean> {
 			catch (ClassCastException castE){
 				isFail = true;
 				isDone = false;
+				try{
+					JSONArray jA = new JSONArray(result);
+					String jO = jA.getString(1);
+					if(jO.toLowerCase(Locale.ENGLISH).equals("user not sign-in")){
+						isNeedLogout = true;
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
 				Log.e("ClassCasting", "Error: " + castE.toString());
 				isGetDataFailed = true;
-				userID = -1024;
 				castE.printStackTrace();
 			}
 	}

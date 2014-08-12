@@ -1,7 +1,6 @@
 package srv.btp.wml.data;
 
 import srv.btp.wml.view.Form_Main;
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -24,6 +23,7 @@ public class State {
 	public static boolean isGPSConnected;
 	public static String UserName;
 	public static boolean isGPSWorking;
+	public static boolean isRemembered;
 	public final static int REQUEST_ENABLE_GPS = 0;
 	
 	public static void RaiseInitialization(Form_Main Main){
@@ -38,7 +38,8 @@ public class State {
 		SessionID = Configuration.getString("sessionID", "");
 		longitude = Configuration.getFloat("long",0f);
 		latitude = Configuration.getFloat("lat", 0f);
-		
+		UserName = Configuration.getString("username", "");
+		isRemembered = Configuration.getBoolean("remember", false);
 	}
 	
 	public static boolean SaveData(){
@@ -52,13 +53,15 @@ public class State {
 		.putString("sessionID", SessionID)
 		.putFloat("long", longitude)
 		.putFloat("lat", latitude)
+		.putString("username", UserName)
+		.putBoolean("remember", isRemembered)
 		.commit();
 		
 		_ReloadInitialization();
 		return true;
 	}
 	
-	public static boolean _ReloadInitialization(){
+	private static boolean _ReloadInitialization(){
 		if(main_activity == null) return false;
 		RaiseInitialization(main_activity);
 		return true;

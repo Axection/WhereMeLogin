@@ -17,6 +17,8 @@ package srv.btp.wml.view;
 
 import srv.btp.wml.R;
 import srv.btp.wml.data.FontEstablishment;
+import srv.btp.wml.data.State;
+import srv.btp.wml.service.ReportService;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -30,11 +32,12 @@ import android.widget.TextView;
 
 public class Frag_Form_Report extends Fragment {
 	//Declaring objects
-    Spinner comboKategori;
-    EditText txtReport;
-    Button btnReport;
-    Bundle loaded;
-    TextView title;
+    private Spinner comboKategori;
+    private EditText txtReport;
+    private Button btnReport;
+    private Bundle loaded;
+    private TextView title;
+	protected ReportService report;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -42,7 +45,7 @@ public class Frag_Form_Report extends Fragment {
     	View v = inflater.inflate(R.layout.frag_form_report, container, false);
     	
     	if (savedInstanceState != null) {
-        	loaded = savedInstanceState;
+        	loaded = savedInstanceState;	
         }else{
         	//initializeComponents();
         }
@@ -50,7 +53,7 @@ public class Frag_Form_Report extends Fragment {
     }
 
     private void initializeComponents() {
-    	comboKategori = (Spinner)getActivity().findViewById(R.id.txtUsername);
+    	comboKategori = (Spinner)getActivity().findViewById(R.id.comboKategori);
     	txtReport = (EditText)getActivity().findViewById(R.id.txtReport);
     	btnReport = (Button)getActivity().findViewById(R.id.btnReport);
     	title = (TextView)getActivity().findViewById(R.id.labelReport);
@@ -67,12 +70,19 @@ public class Frag_Form_Report extends Fragment {
     	btnReport.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO Report
-				//Karena permintaan update adalah bisa mengirim laporan berkali2.
-				//Maka dibiarkan saja ditahan di state Form Report
-				
-				//State.status = State.STATUS_LOGGED_IN;
-				//Form_Main.setFragmentView(State.status);
+				report = new ReportService();
+				String DATA_PRESS[] = { 
+						State.SessionID + "",
+						State.longitude + "", 
+						State.latitude + "",
+						comboKategori.getSelectedItemId() + "", 
+						txtReport.getText() + ""};
+				try {
+					report.execute(DATA_PRESS);
+				} catch (Exception e) {
+					e.printStackTrace();
+					State.main_activity.CallPress();
+				}
 			}
 		});
 		

@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#e56350" >
+     >
 
     <RelativeLayout
         android:id="@+id/rel_title"
@@ -11,7 +11,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="62dp"
-        android:background="#ebc8c8" >
+        android:background="#e02800" >
 
         <TextView
             android:id="@+id/labelAbsensi"
@@ -20,7 +20,7 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:text="ABSENSI"
-            android:textColor="#4f4f4f"
+            android:textColor="#fff"
             android:textSize="36sp" />
 
     </RelativeLayout>
@@ -36,7 +36,7 @@
         android:layout_marginTop="47dp"
         android:gravity="center_vertical|center_horizontal"
         android:text="@string/absenNotifier"
-        android:textColor="#fff"
+        android:textColor="#717070"
         android:textSize="18sp" />
 
     <TextView
@@ -45,12 +45,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/lblNotice"
-        android:layout_marginTop="23dp"
         android:layout_marginLeft="22dp"
         android:layout_marginRight="22dp"
+        android:layout_marginTop="23dp"
         android:gravity="center_vertical|center_horizontal"
         android:text="@string/notifier2"
-        android:textColor="#fff"
+        android:textColor="#717070"
         android:textSize="18sp" />
 
     <ImageButton
@@ -60,7 +60,8 @@
         android:layout_below="@+id/lblNotice2"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="37dp"
-        android:background="@drawable/absen_no_ok"
+        android:contentDescription="Presence Button"
+        android:background="@drawable/absen_no_ok_rec"
         android:clickable="false"
         android:scaleType="fitXY" />
 

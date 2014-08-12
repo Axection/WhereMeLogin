@@ -7,6 +7,7 @@ import srv.btp.wml.R;
 import srv.btp.wml.data.State;
 import srv.btp.wml.view.Form_Main;
 import srv.btp.wml.view.Frag_Form_Presence;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -16,9 +17,12 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.test.suitebuilder.annotation.Suppress;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -35,24 +39,25 @@ public class GPSLocationService {
 	 * 
 	 * Info menyusul
 	 */
-	public boolean location_flag = false;
-	public static MyLocationListener location_listener;
-	public LocationManager location_manager;
-	public LocationResult locationResult;
-	public static final int SCAN_TIME = 180000; // OBSOLETE
-	public static final int DISTANCE_LOCK = 0;
-	public static Context baseContext = State.main_activity.getBaseContext();
-	public Timer ctd;
+	private boolean location_flag = false;
+	private static MyLocationListener location_listener;
+	private LocationManager location_manager;
+	@SuppressWarnings("unused")
+	private LocationResult locationResult;
+	
+	private static final int DISTANCE_LOCK = 0;
+	private static Context baseContext = State.main_activity.getBaseContext();
+	
 
 	// Fast Data Move
-	public double current_longitude = 0;
-	public double current_latitude = 0;
-	public int current_city = 0;
-	public ImageView GPSIndicator;
-	public int lastCity = 0;
+	private double current_longitude = 0;
+	private double current_latitude = 0;
+	
+	private ImageView GPSIndicator;
+	
 
-	public static final String LOG_TAG = "GpsMockProvider";
-	public static final String GPS_MOCK_PROVIDER = "GpsMockProvider";
+	
+	private static final String GPS_MOCK_PROVIDER = "GpsMockProvider";
 	public static boolean isMocked = false;
 	// public CountDownTimer cd;
 	private static boolean isChecking;
@@ -78,7 +83,7 @@ public class GPSLocationService {
 
 	}
 
-	public void RecreateTimer() {
+	private void RecreateTimer() {
 		// ctd = new Timer();
 		// ctd.schedule(new GetLastLocation(), SCAN_TIME);
 
@@ -88,6 +93,7 @@ public class GPSLocationService {
 		location_manager.removeUpdates(location_listener);
 	}
 
+	@Suppress()
 	public boolean ActivateGPS() {
 		if (isChecking)
 			return false;
@@ -111,6 +117,7 @@ public class GPSLocationService {
 
 			GPSIndicator.setImageResource(R.drawable.indicator_gps_warn);
 			Form_Main.txtGPS.setText("GPS Status : Scanning");
+			isChecking = false;
 			return true;
 		} else {
 			// GPS mati. siapkan indikator mati :(
@@ -221,7 +228,11 @@ public class GPSLocationService {
 				location.setLongitude(107.66666);
 				location.setTime(System.currentTimeMillis());
 				location.setAccuracy(0);
-				location.setElapsedRealtimeNanos(System.currentTimeMillis());
+				if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+					location.setElapsedRealtimeNanos(System.currentTimeMillis());
+				} else {
+					location.setSpeed(0);
+				}
 
 				// show debug message in log
 
@@ -235,7 +246,7 @@ public class GPSLocationService {
 			return false;
 		}
 	}
-
+	
 	private class MyLocationListener implements LocationListener {
 		@Override
 		public void onLocationChanged(Location loc) {
@@ -262,7 +273,7 @@ public class GPSLocationService {
 					.putFloat("long", (float) current_longitude)
 					.putFloat("lat", (float) current_latitude).commit();
 
-			// TODO: Masukkan perihal yang diinginkan setelah lat & long
+			//Masukkan perihal yang diinginkan setelah lat & long
 			// ditemukan
 
 			// cd.start();
@@ -296,29 +307,20 @@ public class GPSLocationService {
 				GPSIndicator.setImageResource(R.drawable.indicator_gps_warn);
 				Form_Main.txtGPS.setText("GPS Status : Re-Scanning");
 			}
-			State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
-		}
-
-	}
-
-	// EXTENDED
-	class GetLastLocation extends TimerTask {
-		@Override
-		public void run() {
-			location_manager.removeUpdates(location_listener);
-			Location gps_loc = null;
-			try {
-				gps_loc = location_manager
-						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-				locationResult.gotLocation(gps_loc);
-			} catch (NullPointerException e) {
-				RecreateTimer();
+			try{
+				State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
 			}
-
+			catch(NullPointerException e){
+				e.printStackTrace();
+				//Handle some errors when location locked before logged in.
+			}
 		}
+
 	}
 
-	public static abstract class LocationResult {
+	
+
+	private static abstract class LocationResult {
 		public abstract void gotLocation(Location location);
 	}
 }
