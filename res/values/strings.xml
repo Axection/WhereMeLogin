@@ -10,9 +10,9 @@
     <string name="notifier2">Tombol akan siap ditekan setelah GPS dan sambungan internet memadai.</string>
 
     <string-array name="stringTestArray">
-        <item>Array</item>
-        <item>NotArray</item>
-        <item>MaybeArray</item>
+        <item>Laporan Awal</item>
+        <item>Checkpoint</item>
+        <item>Resume</item>
     </string-array>
 
     <string name="title_activity_splash">Mobile Workforce</string>

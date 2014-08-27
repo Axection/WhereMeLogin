@@ -17,7 +17,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -307,6 +309,9 @@ public class Form_Main extends FragmentActivity {
 				timerService.cancel();
 				gls.StopGPS();
 				Frag_Form_Presence.GPSCode = -1;
+				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+					
+				}
 				finish();
 			}
 		});
@@ -345,6 +350,11 @@ public class Form_Main extends FragmentActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	@Override
+	public void onResume(){
+		super.onResume();
+		gls.ActivateGPS();
+	}
 	
 	@Override
 	public void onBackPressed(){
@@ -360,17 +370,9 @@ public class Form_Main extends FragmentActivity {
 
 		case State.REQUEST_ENABLE_GPS:
 			// Restart~
-			Intent mStartActivity = new Intent(
-					State.main_activity.getBaseContext(), Form_Main.class);
-			int mPendingIntentId = 45556;
-			PendingIntent mPendingIntent = PendingIntent.getActivity(
-					State.main_activity.getBaseContext(), mPendingIntentId,
-					mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-			AlarmManager mgr = (AlarmManager) State.main_activity
-					.getBaseContext().getSystemService(Context.ALARM_SERVICE);
-			mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 400,
-					mPendingIntent);
-			onBackPressed();
+			if(resultCode == 1){
+				onResume();
+			}
 
 		}
 	}
@@ -384,141 +386,157 @@ public class Form_Main extends FragmentActivity {
 		
 		
 	}
+	
+	protected void RunTask(){
+		if (LoginService.isDone) {
+			// LoginUpdate.cancel();
+			LoginService.isDone = false;
+			State.main_activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					Log.e("LoginUpdate",
+							"Read status LoginService isFail = "
+									+ LoginService.isFail);
+					if (LoginService.isFail) {
+						LoginService.isFail = false;
+						Log.d("RESPOND",LoginService.respondCode + "");
+						CallPassword(LoginService.respondCode);
+					} else {
+						// Simpan Auth ID dan lainnya
+						State.status = State.STATUS_LOGGED_IN;
+						Form_Main.setFragmentView(State.status);
+
+						
+					}
+				}
+			});
+		}
+		//AbsenService
+		//Log.d("AbsenServiceTimer", AbsenService.isDone + "");
+		//AbsenService
+		if (AbsenService.isDone) {
+			AbsenService.isDone = false;
+			State.main_activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					Log.e("AbsenService",
+							"Read status Absen isFail = "
+									+ AbsenService.isFail);
+					if (AbsenService.isFail) {
+						AbsenService.isFail = false;
+						Log.d("RESPOND",AbsenService.SessionIDResult + "");
+						CallPress();
+					} else {
+						Log.d("AbsenService RESULT","Wah, accessed");
+						// Simpan Auth ID dan lainnya
+						State.status = State.STATUS_PRESENCED;
+						Form_Main.setFragmentView(State.status);
+
+					}
+				}
+			});
+		}
+		
+		//LogoutService
+		if (LogoutService.isDone) {
+			LogoutService.isDone = false;
+			State.main_activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					Log.e("LogoutService",
+							"Read status Logout isFail = "
+									+ LogoutService.isFail);
+					if (LogoutService.isFail) {
+						LogoutService.isFail = false;
+						Log.d("LogoutRespond",LogoutService.SessionIDResult + "");
+						if(LogoutService.isNeedLogout){
+							LogoutService.isNeedLogout = false;
+							ForceLogout();
+							
+						}else
+							CallLogoutError();
+					} else {
+						Log.d("LogoutService RESULT","Wah, accessed");
+						// Simpan Auth ID dan lainnya
+						State.status = State.STATUS_LOGGED_IN;
+						Form_Main.setFragmentView(State.status);
+					}
+				}
+			});
+		}	
+		//ReportService
+		if (ReportService.isDone) {
+			ReportService.isDone = false;
+			State.main_activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					Log.e("ReportService",
+							"Read status Report isFail = "
+									+ ReportService.isFail);
+					if (ReportService.isFail) {
+						ReportService.isFail = false;
+						Log.d("ReportService",ReportService.SessionIDResult + "");
+						if(ReportService.isNeedLogout){
+							ReportService.isNeedLogout = false;
+							ForceLogout();
+						}else
+						MsgBox("Laporan","Laporan gagal dikirim.");
+						
+					} else {
+						Log.d("ReportService RESULT","Wah, accessed");
+						MsgBox("Laporan","Laporan terkirim.");
+						//Terkirim
+						
+					}
+				}
+			});
+		}
+		
+		//GPSLocation Service
+		if(!GPSLocationService.displayGpsStatus() && !GPSLocationService.isMocked){
+			State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
+			State.main_activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+						gls.ActivateGPS();
+					}
+			});
+		}else{
+			Log.d("isGPSWorking",State.isGPSWorking + "");
+			if(State.isGPSWorking){
+				Frag_Form_Presence.GPSCode = 1;
+			}else{
+				Frag_Form_Presence.GPSCode = 2;
+			}
+			try{
+			State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
+			}catch(NullPointerException npE){
+				Log.d("Frag_Form_Presence Init","Form Presence not built yet.");
+			}
+			
+		}
+		
+		//Rolling~
+			Log.d("Timer Service", "Rolling Scanning.");	
+		}
 
 	// CallPassword Extension
 	private TimerTask timerService = new TimerTask() {
 		@Override
 		public void run() {
-			//LoginService Division
-			if (LoginService.isDone) {
-				// LoginUpdate.cancel();
-				LoginService.isDone = false;
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
 				State.main_activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						Log.e("LoginUpdate",
-								"Read status LoginService isFail = "
-										+ LoginService.isFail);
-						if (LoginService.isFail) {
-							LoginService.isFail = false;
-							Log.d("RESPOND",LoginService.respondCode + "");
-							CallPassword(LoginService.respondCode);
-						} else {
-							// Simpan Auth ID dan lainnya
-							State.status = State.STATUS_LOGGED_IN;
-							Form_Main.setFragmentView(State.status);
+						RunTask();
 
-							
-						}
 					}
 				});
-			}
-			//AbsenService
-			//Log.d("AbsenServiceTimer", AbsenService.isDone + "");
-			//AbsenService
-			if (AbsenService.isDone) {
-				AbsenService.isDone = false;
-				State.main_activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Log.e("AbsenService",
-								"Read status Absen isFail = "
-										+ AbsenService.isFail);
-						if (AbsenService.isFail) {
-							AbsenService.isFail = false;
-							Log.d("RESPOND",AbsenService.SessionIDResult + "");
-							CallPress();
-						} else {
-							Log.d("AbsenService RESULT","Wah, accessed");
-							// Simpan Auth ID dan lainnya
-							State.status = State.STATUS_PRESENCED;
-							Form_Main.setFragmentView(State.status);
 
-							
-						}
-					}
-				});
-			}
-			
-			//LogoutService
-			if (LogoutService.isDone) {
-				LogoutService.isDone = false;
-				State.main_activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Log.e("LogoutService",
-								"Read status Logout isFail = "
-										+ LogoutService.isFail);
-						if (LogoutService.isFail) {
-							LogoutService.isFail = false;
-							Log.d("LogoutRespond",LogoutService.SessionIDResult + "");
-							if(LogoutService.isNeedLogout){
-								LogoutService.isNeedLogout = false;
-								ForceLogout();
-								
-							}else
-								CallLogoutError();
-						} else {
-							Log.d("LogoutService RESULT","Wah, accessed");
-							// Simpan Auth ID dan lainnya
-							State.status = State.STATUS_LOGGED_IN;
-							Form_Main.setFragmentView(State.status);
-						}
-					}
-				});
-			}
-			
-			//ReportService
-			if (ReportService.isDone) {
-				ReportService.isDone = false;
-				State.main_activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Log.e("ReportService",
-								"Read status Report isFail = "
-										+ ReportService.isFail);
-						if (ReportService.isFail) {
-							ReportService.isFail = false;
-							Log.d("ReportService",ReportService.SessionIDResult + "");
-							if(ReportService.isNeedLogout){
-								ReportService.isNeedLogout = false;
-								ForceLogout();
-							}else
-							MsgBox("Laporan","Laporan gagal dikirim.");
-							
-						} else {
-							Log.d("ReportService RESULT","Wah, accessed");
-							MsgBox("Laporan","Laporan terkirim.");
-							//Terkirim
-							
-						}
-					}
-				});
-			}
-			
-			//GPSLocation Service
-			if(!GPSLocationService.displayGpsStatus() && !GPSLocationService.isMocked){
-				State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
-				State.main_activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-							gls.ActivateGPS();
-						}
-				});
 			}else{
-				Log.d("isGPSWorking",State.isGPSWorking + "");
-				if(State.isGPSWorking){
-					Frag_Form_Presence.GPSCode = 1;
-				}else{
-					Frag_Form_Presence.GPSCode = 2;
-				}
-				State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);
-				
+				RunTask();
 			}
-			
-			//Rolling~
-			Log.d("Timer Service", "Rolling Scanning.");	
-		}
+		};
 	};
 	// End CallPassword
 

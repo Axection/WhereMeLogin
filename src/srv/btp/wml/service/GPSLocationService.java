@@ -151,6 +151,7 @@ public class GPSLocationService {
 								public void onClick(DialogInterface dialog,
 										int id) {
 									isChecking = false;
+									
 								}
 							});
 					builder.setPositiveButton("Menyalakan GPS",
@@ -164,12 +165,14 @@ public class GPSLocationService {
 									State.main_activity.startActivityForResult(
 											enableGPSIntent,
 											State.REQUEST_ENABLE_GPS);
+									isChecking = false;
+									
 								}
 							});
 
 					AlertDialog alert = builder.create();
 					alert.show();
-
+					
 				}
 			}
 

@@ -19,6 +19,8 @@ import srv.btp.wml.R;
 import srv.btp.wml.data.FontEstablishment;
 import srv.btp.wml.data.State;
 import srv.btp.wml.service.ReportService;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -70,12 +72,31 @@ public class Frag_Form_Report extends Fragment {
     	btnReport.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				CallSendData();
+				
+				
+			}
+		});
+		
+	}
+    private void CallSendData(){
+    	String msg = "";
+		AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(State.main_activity);
+        msg = "Apakah anda yakin? Laporan yang telah terkirim tidak akan dapat diubah kembali.";
+        builder.setTitle("Mengirim");
+		builder.setMessage(msg);
+        builder.setCancelable(false);
+        builder.setPositiveButton("Ya", 
+            new DialogInterface.OnClickListener() {
+			// Yes
+			public void onClick(DialogInterface dialog, int id) {
 				report = new ReportService();
 				String DATA_PRESS[] = { 
 						State.SessionID + "",
 						State.longitude + "", 
 						State.latitude + "",
-						comboKategori.getSelectedItemId() + "", 
+						(comboKategori.getSelectedItemId() + 1) + "", 
 						txtReport.getText() + ""};
 				try {
 					report.execute(DATA_PRESS);
@@ -85,9 +106,20 @@ public class Frag_Form_Report extends Fragment {
 				}
 			}
 		});
-		
-	}
-    
+        builder.setNegativeButton("Tidak",
+            new DialogInterface.OnClickListener() {
+              	//No
+                public void onClick(DialogInterface dialog,int id) {
+                    dialog.cancel();
+                }
+            });
+        AlertDialog alert = builder.create();
+		alert.getWindow().getAttributes().windowAnimations = R.style.dialog_anim;
+		alert.setCanceledOnTouchOutside(false);
+        alert.show();
+    	
+    	
+    }
     @Override
     public void onStart() {
         super.onStart();
