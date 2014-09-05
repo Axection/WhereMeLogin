@@ -1,13 +1,9 @@
 package srv.btp.wml.service;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import srv.btp.wml.R;
 import srv.btp.wml.data.State;
 import srv.btp.wml.view.Form_Main;
 import srv.btp.wml.view.Frag_Form_Presence;
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -18,14 +14,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.test.suitebuilder.annotation.Suppress;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 public class GPSLocationService {
 	/***
@@ -102,8 +96,8 @@ public class GPSLocationService {
 		location_flag = displayGpsStatus();
 		location_listener = new MyLocationListener();
 		if (location_flag) {
-			Toast.makeText(baseContext, "GPS Menyala. Lakukan scanning...",
-					Toast.LENGTH_SHORT).show();
+			//Toast.makeText(baseContext, "GPS Menyala. Lakukan scanning...",
+			//		Toast.LENGTH_SHORT).show();
 
 			location_manager.requestLocationUpdates(
 					LocationManager.GPS_PROVIDER, 0, DISTANCE_LOCK, /***
@@ -116,17 +110,48 @@ public class GPSLocationService {
 			RecreateTimer();
 
 			GPSIndicator.setImageResource(R.drawable.indicator_gps_warn);
-			Form_Main.txtGPS.setText("GPS Status : Scanning");
+			Form_Main.txtGPS.setText("GPS: Scanning");
 			isChecking = false;
+			
+			//Typesafe
+			Log.d("GPS Enabled", "GPS Enabled");
+			if (location_manager != null) {
+				Location location = location_manager
+						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				if (location != null) {
+					/*
+					 * MyLocationListener Advancer
+					 */
+					setLocation(location);
+
+				}
+			}
+			// Superfast location lock via network
+			if (location_manager
+					.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+				location_manager.requestLocationUpdates(
+						LocationManager.NETWORK_PROVIDER, 0, DISTANCE_LOCK,
+						location_listener);
+				Log.d("Network", "Network");
+				if (location_manager != null) {
+					Location location = location_manager
+							.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+					if (location != null) {
+						setLocation(location);
+					}
+				}
+
+			}
+
 			return true;
 		} else {
 			// GPS mati. siapkan indikator mati :(
 			GPSIndicator.setImageResource(R.drawable.indicator_gps_off);
-			Form_Main.txtGPS.setText("GPS Status : OFF");
+			Form_Main.txtGPS.setText("GPS: Off");
 
 			// mengetes mock
-			if (!location_manager
-					.isProviderEnabled(GPSLocationService.GPS_MOCK_PROVIDER)) {
+			/*if (!location_manager
+					.isProviderEnabled(GPSLocationService.GPS_MOCK_PROVIDER)) {*/
 				// Membuat test mock provider
 				try {
 					location_manager.addTestProvider(
@@ -134,7 +159,7 @@ public class GPSLocationService {
 							false, false, true, false, false, 0, 5);
 					location_manager.setTestProviderEnabled(
 							GPSLocationService.GPS_MOCK_PROVIDER, true);
-
+					isMocked = true;
 					Log.e("ERROR GGENERATION", "HAX");
 
 				} catch (SecurityException e) {
@@ -144,13 +169,14 @@ public class GPSLocationService {
 					builder.setTitle("PERINGATAN KERAS");
 					builder.setMessage(msg);
 					builder.setCancelable(false);
-					builder.setNegativeButton("Lanjutkan Saja",
+					builder.setNegativeButton("Lanjutkan",
 							new DialogInterface.OnClickListener() {
 								// DO NOTHING
 								@Override
 								public void onClick(DialogInterface dialog,
 										int id) {
 									isChecking = false;
+									State.main_activity.onResume();
 									
 								}
 							});
@@ -174,20 +200,20 @@ public class GPSLocationService {
 					alert.show();
 					
 				}
-			}
+			//}
 
 			// summon mock
-			if (location_manager
-					.isProviderEnabled(GPSLocationService.GPS_MOCK_PROVIDER)) {
+			/*if (location_manager
+					.isProviderEnabled(GPSLocationService.GPS_MOCK_PROVIDER)) {*/
+			  if(isMocked){	
 				GPSIndicator.setImageResource(R.drawable.indicator_gps_mocked);
-				Form_Main.txtGPS.setText("GPS Status : Mocked!");
+				Form_Main.txtGPS.setText("GPS: Mocked!");
 				location_manager.requestLocationUpdates(
 						GPSLocationService.GPS_MOCK_PROVIDER, 0, 0,
 						location_listener);
-				isMocked = true;
+				//isMocked = true;
 				State.isGPSConnected = true; // khusus mocking
-				isMocked = true;
-
+				Log.d("Mocking","Enabling Mock");
 				// dan beritahu bahwa program sedang dalam mode testing
 				String msg = "";
 				AlertDialog.Builder builder;
@@ -250,6 +276,41 @@ public class GPSLocationService {
 		}
 	}
 	
+	public void setLocation(Location loc) {
+		State.isGPSWorking = true;
+		if (!isMocked) {
+			GPSIndicator.setImageResource(R.drawable.indicator_gps_on);
+			if(loc.getProvider() == LocationManager.GPS_PROVIDER){
+				Form_Main.txtGPS.setText("Locked via GPS");
+			}else{
+				Form_Main.txtGPS.setText("Locked via Network");
+			}
+		}
+		// Sekarang ini hanya untuk debugging
+		Log.d("GPSLocationDebug", loc.getTime() + " timelock.");
+		String txt = "Terdeteksi lokasi berpindah :\n Lat: "
+				+ loc.getLatitude() + " Lng: " + loc.getLongitude();
+		Log.d("GPSLocation", txt);
+		current_longitude = loc.getLongitude();
+		current_latitude = loc.getLatitude();
+		PreferenceManager
+				.getDefaultSharedPreferences(
+						State.main_activity.getBaseContext()).edit()
+				.putFloat("long", (float) current_longitude)
+				.putFloat("lat", (float) current_latitude).commit();
+
+		//Masukkan perihal yang diinginkan setelah lat & long
+		// ditemukan
+
+		// cd.start();
+		// Animasi selesai
+		// lastCity = current_city;
+		State.latitude = (float) current_latitude;
+		State.longitude = (float) current_longitude;
+		RecreateTimer();
+		
+	}
+
 	private class MyLocationListener implements LocationListener {
 		@Override
 		public void onLocationChanged(Location loc) {
@@ -257,7 +318,8 @@ public class GPSLocationService {
 			 * Setiap posisinya berpindah, listener ini akan terus terupdate.
 			 * Mendapatkan lokasi baru dan dicocokkan dengan daftar kota.
 			 */
-			// ctd.cancel(); //OBSOLETE
+			setLocation(loc);
+			/*// ctd.cancel(); //OBSOLETE
 			State.isGPSWorking = true;
 			if (!isMocked) {
 				GPSIndicator.setImageResource(R.drawable.indicator_gps_on);
@@ -284,7 +346,7 @@ public class GPSLocationService {
 			// lastCity = current_city;
 			State.latitude = (float) current_latitude;
 			State.longitude = (float) current_longitude;
-			RecreateTimer();
+			RecreateTimer();*/
 		}
 
 		// Unused Callbacks
@@ -302,13 +364,13 @@ public class GPSLocationService {
 				Frag_Form_Presence.GPSCode = 1;
 				State.isGPSWorking = true;
 				GPSIndicator.setImageResource(R.drawable.indicator_gps_on);
-				Form_Main.txtGPS.setText("GPS Status : Locked!");
+				Form_Main.txtGPS.setText("GPS: Locked");
 				
 			} else if (status == LocationProvider.TEMPORARILY_UNAVAILABLE) {
 				Frag_Form_Presence.GPSCode = 2;
 				State.isGPSWorking = false;
 				GPSIndicator.setImageResource(R.drawable.indicator_gps_warn);
-				Form_Main.txtGPS.setText("GPS Status : Re-Scanning");
+				Form_Main.txtGPS.setText("GPS: Re-scanning");
 			}
 			try{
 				State.main_activity.runOnUiThread(Frag_Form_Presence.runUi);

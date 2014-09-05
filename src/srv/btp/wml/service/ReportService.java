@@ -95,6 +95,7 @@ public class ReportService extends AsyncTask<String, Integer, Boolean> {
 	InputStream inputStream = null;
 	String result;
 	public static boolean isNeedLogout = false;
+	public static boolean isReportingBackground = false;
 
 	@Override
 	protected void onPreExecute() {
@@ -146,7 +147,7 @@ public class ReportService extends AsyncTask<String, Integer, Boolean> {
 			if (values[4] != null) { // laporan
 				laporan = values[4];
 			}
-
+			
 			int status = postData(SessionID, longitude, latitude, kategori,
 					laporan);
 

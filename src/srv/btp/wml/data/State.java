@@ -1,9 +1,13 @@
 package srv.btp.wml.data;
 
+import srv.btp.wml.BuildConfig;
 import srv.btp.wml.view.Form_Main;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
+import android.text.TextUtils.SimpleStringSplitter;
+import android.text.TextUtils.StringSplitter;
 
 public class State {
 	//Value state
@@ -25,6 +29,8 @@ public class State {
 	public static boolean isGPSWorking;
 	public static boolean isRemembered;
 	public final static int REQUEST_ENABLE_GPS = 0;
+	public static String CategoryList[][];
+	private static String inlineCategoryList;
 	
 	public static void RaiseInitialization(Form_Main Main){
 		//Set the shared activity
@@ -40,12 +46,13 @@ public class State {
 		latitude = Configuration.getFloat("lat", 0f);
 		UserName = Configuration.getString("username", "");
 		isRemembered = Configuration.getBoolean("remember", false);
+		BuildCategory(Configuration.getString("kategori",""));
 	}
 	
 	public static boolean SaveData(){
 		SharedPreferences Configuration = PreferenceManager.getDefaultSharedPreferences(
 				main_activity.getBaseContext());
-		
+		CompressCategory();
 		Configuration.edit()
 		.putInt("status", status)
 		.putInt("AuthID", AuthID)
@@ -55,10 +62,37 @@ public class State {
 		.putFloat("lat", latitude)
 		.putString("username", UserName)
 		.putBoolean("remember", isRemembered)
+		.putString("kategori", inlineCategoryList)
 		.commit();
 		
 		_ReloadInitialization();
 		return true;
+	}
+	
+	public static void BuildCategory(String category){
+		//construction
+		// 1|Waypoint/2|Resume/3|Laporan Awal/4|Lokasi
+		int counter = 0;
+		StringSplitter ss = new TextUtils.SimpleStringSplitter('/');
+		ss.setString(category);
+		for(String majorLine : ss){
+			StringSplitter subSS = new TextUtils.SimpleStringSplitter('|');
+			subSS.setString(majorLine);
+			int miniLines = 0;
+			for(String minorLine : subSS){
+				CategoryList[counter][miniLines] = minorLine;
+				miniLines ++;
+			}
+			counter++;
+		}
+	}
+	
+	public static void CompressCategory(){
+		for(int a = 0;a<CategoryList.length;a++){
+			inlineCategoryList += CategoryList[a][0] + "|" + CategoryList[a][1] + "/";
+		}
+		inlineCategoryList = inlineCategoryList.substring(0, inlineCategoryList.length()-2);
+		
 	}
 	
 	private static boolean _ReloadInitialization(){

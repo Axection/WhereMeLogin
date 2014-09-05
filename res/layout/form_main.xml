@@ -5,21 +5,50 @@
     android:layout_height="match_parent"
     tools:context="srv.btp.wml.view.Form_Main"
      tools:ignore="MergeRootFrame"  >
+	
+    <RelativeLayout
+        android:id="@+id/top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="62dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="#fff" >
 
+        <ImageButton
+            android:id="@+id/btnOption"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/option"
+            android:scaleType="centerInside"
+            android:src="@drawable/option" />
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/back"
+            android:scaleType="centerInside"
+            android:src="@drawable/back" />
+        
+    </RelativeLayout>
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/top_layout"
+        android:layout_above="@+id/bot_layout"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/top_layout"
         android:background="#fff"
         android:minHeight="464dp" >
 
     </FrameLayout>
 
     <RelativeLayout
-        android:id="@+id/top_layout"
+        android:id="@+id/bot_layout"
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:layout_alignParentBottom="true"

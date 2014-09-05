@@ -49,7 +49,7 @@
             android:layout_height="96dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="62dp"
+            
             android:background="#e02800" >
 
             <TextView
@@ -65,12 +65,10 @@
 
         <Spinner
             android:id="@+id/comboKategori"
-            android:layout_width="wrap_content"
+			android:layout_centerHorizontal="true"
+            android:layout_width="440dp"
             android:layout_height="47dp"
-            android:layout_alignParentLeft="true"
             android:layout_below="@+id/rel_title"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/report_rec"
             android:entries="@array/stringTestArray"
