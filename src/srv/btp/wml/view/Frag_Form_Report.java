@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,12 +46,29 @@ public class Frag_Form_Report extends Fragment {
 	protected ReportService report;
 
 	static class CustomArrayAdapter<T> extends ArrayAdapter<T> {
+		
+		private T[] itemList;
+		private Context ctx;
+		
 		public CustomArrayAdapter(Context ctx, T[] objects) {
 			super(ctx, android.R.layout.simple_spinner_item, objects);
+			this.ctx = ctx;
+			this.itemList = objects;
 		}
 
 		// other constructors
 
+		@Override
+		public TextView getView(int position, View convertView, ViewGroup parent) {
+			TextView v = (TextView)super.getView(position, convertView, parent);
+			v.setText(itemList[position].toString());
+			v.setTextColor(Color.BLACK);// choose your color :)
+			v.setGravity(Gravity.LEFT + Gravity.CENTER);
+			FontEstablishment.setCustomFont(v, "myriad.otf",
+					v.getContext());
+			return v;
+		}
+		
 		@Override
 		public View getDropDownView(int position, View convertView,
 				ViewGroup parent) {
@@ -61,8 +79,12 @@ public class Frag_Form_Report extends Fragment {
 			/* if(isDroidX) { */
 			TextView text = (TextView) view.findViewById(android.R.id.text1);
 			text.setTextColor(Color.BLACK);// choose your color :)
-			text.setPadding(4, 4, 4, 4);
-			text.setBackgroundColor(Color.WHITE);
+			text.setHeight((int)(45*getContext().getResources().getDisplayMetrics().density));
+			//text.setBackgroundColor(Color.WHITE);
+			//text.set
+			text.setGravity(Gravity.LEFT + Gravity.CENTER);
+			FontEstablishment.setCustomFont(text, "myriad.otf",
+					text.getContext());
 			/* } */
 
 			return view;

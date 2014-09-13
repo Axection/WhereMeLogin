@@ -44,7 +44,7 @@ public class Form_Main extends FragmentActivity {
 	private ImageButton btnOption;
 	private static boolean activityVisible;
 	public static int timercounter;
-	public final static int INTERVAL_UPDATE_IN_SECOND = 30;
+	public final static int INTERVAL_UPDATE_IN_SECOND = 180;
 	
 	//Securation
 	public static boolean isActivityVisible() {
