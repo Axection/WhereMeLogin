@@ -44,7 +44,7 @@ public class Form_Main extends FragmentActivity {
 	private ImageButton btnOption;
 	private static boolean activityVisible;
 	public static int timercounter;
-	public final static int INTERVAL_UPDATE_IN_SECOND = 180;
+	public final static int INTERVAL_UPDATE_IN_SECOND = 30;
 	
 	//Securation
 	public static boolean isActivityVisible() {
@@ -509,7 +509,7 @@ public class Form_Main extends FragmentActivity {
 								+ "");
 						if (LogoutService.isNeedLogout) {
 							LogoutService.isNeedLogout = false;
-							ForceLogout();
+							if(!ReportService.isReportingBackground)ForceLogout();
 
 						} else
 							CallLogoutError();
@@ -582,23 +582,26 @@ public class Form_Main extends FragmentActivity {
 		// Rolling~
 		Log.d("Timer Service", "Rolling Scanning.");
 		
-		//TODO:Update timer 
+		// TODO:Update timer
 		timercounter++;
-		if(timercounter > INTERVAL_UPDATE_IN_SECOND){
-			ReportService report = new ReportService();
-			ReportService.isReportingBackground = true;
-			String DATA_PRESS[] = { 
-					State.SessionID + "",
-					State.longitude + "", 
-					State.latitude + "",
-					0 + "", 
-					""};
-			try {
-				report.execute(DATA_PRESS);
-			} catch (Exception e) {
-				e.printStackTrace();
-				State.main_activity.CallPress();
-			}
+		if (timercounter > INTERVAL_UPDATE_IN_SECOND && State.current_fragment.getClass().equals(Frag_Form_Report.class)) {
+			State.main_activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					ReportService report = new ReportService();
+					ReportService.isReportingBackground = true;
+					String DATA_PRESS[] = { State.SessionID + "",
+							State.longitude + "", State.latitude + "", 0 + "",
+							"" };
+					try {
+						report.execute(DATA_PRESS);
+					} catch (Exception e) {
+						e.printStackTrace();
+						State.main_activity.CallPress();
+					}
+				}
+			});
+
 			timercounter = 0;
 		}
 		

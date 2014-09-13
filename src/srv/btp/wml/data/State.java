@@ -2,6 +2,8 @@ package srv.btp.wml.data;
 
 import srv.btp.wml.BuildConfig;
 import srv.btp.wml.view.Form_Main;
+import srv.btp.wml.view.SplashActivity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -21,6 +23,7 @@ public class State {
 	public static int AuthID = -1; //UserID yang akan disimpan di dalam preferences
 	public static Form_Main main_activity;
 	public static Fragment current_fragment;
+	public static SplashActivity splash_activity;
 	public static float longitude;
 	public static float latitude;
 	public static String SessionID = "";
@@ -46,7 +49,7 @@ public class State {
 		latitude = Configuration.getFloat("lat", 0f);
 		UserName = Configuration.getString("username", "");
 		isRemembered = Configuration.getBoolean("remember", false);
-		BuildCategory(Configuration.getString("kategori",""));
+		//BuildCategory(Configuration.getString("kategori",""));
 	}
 	
 	public static boolean SaveData(){
@@ -87,6 +90,17 @@ public class State {
 		}
 	}
 	
+	public static String To2From(String[][] Category, String lookup, int fromCell, int toCell){
+		//To2 adalah matching dari lookup yang ada di kolom 0, result di kolom 1
+		for(int a=0;a<Category.length;a++){
+			if(Category[a][fromCell].equals(lookup)){
+				return Category[a][toCell];
+			}
+		}
+		return "";
+	}
+	
+
 	public static void CompressCategory(){
 		for(int a = 0;a<CategoryList.length;a++){
 			inlineCategoryList += CategoryList[a][0] + "|" + CategoryList[a][1] + "/";
